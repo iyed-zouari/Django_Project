@@ -21,4 +21,4 @@ class Offre(models.Model):
     date_proposition = models.DateField(auto_now_add=True)
     expedition = models.ForeignKey(Expedition, on_delete=models.CASCADE)
     transporteur = models.ForeignKey(Entreprise, on_delete=models.CASCADE)
-    vehicule = models.ForeignKey(Vehicule, on_delete=models.CASCADE, null=True,blank=True)
+    vehicule = models.ForeignKey(Vehicule, on_delete=models.CASCADE)
