@@ -41,8 +41,8 @@ class FilterBYPrice(admin.SimpleListFilter):
     
 @admin.register(Offre)
 class OffreAdmin(admin.ModelAdmin):
-    list_display = ('id', 'expedition', 'transporteur', 'vehicule', 'prix', 'delai_jours', 'statut')
-    list_filter = ('statut',)
+    list_display = ('id', 'expedition', 'transporteur', 'vehicule', 'prix', 'delai_jours', 'statut_colore')
+    list_filter = ('statut',FilterBYPrice)
     search_fields = ('expedition__reference', 'transporteur__raison_sociale')
     readonly_fields = ('date_proposition', 'created_at', 'updated_at')
     actions = [exporter_offres_csv]
@@ -71,7 +71,7 @@ class OffreAdmin(admin.ModelAdmin):
             'refusee': '#D9534F',   
             'retiree': '#777777',   
         }
-        
+
         return format_html(
             '<span style="color:white; background:{}; padding:4px 8px; border-radius:4px; font-weight:bold;">{}</span>',
             couleurs.get(obj.statut, '#999'),

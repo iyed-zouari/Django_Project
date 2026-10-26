@@ -29,7 +29,7 @@ class OffreInline(admin.StackedInline):
 @admin.register(Expedition)
 class ExpeditionAdmin(admin.ModelAdmin):
     list_display = ('reference', 'ville_depart', 'ville_arrivee', 'poids_kg', 'statut', 'entreprise')
-    list_filter = ('statut',)
+    list_filter = ('statut','ville_depart', EnRetardFilter)
     search_fields = ('reference', 'ville_depart', 'ville_arrivee')
     readonly_fields = ('reference', 'created_at', 'updated_at')
     inlines = [OffreInline]
