@@ -1,0 +1,9 @@
+
+<h1>Liste des Expéditions</h1>
+<ul>
+    {% for expedition in liste %}
+        <li>
+            <a href="{% url 'delete_expedition' expedition.reference %}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette expédition ?');">Supprimer</a>
+            <a href="{% url 'detail_expedition' reference=expedition.reference %}">{{ expedition.reference }} - {{ expedition.entreprise }} ({{ expedition.poids_kg }} kg)</a></li>
+    {% endfor %}
+</ul>
