@@ -1,2 +1,22 @@
-<hr>  {{ expedition.reference }}-{{expedition.description}}--{{expedition.statut}}  </hr>
-<a href="{% url 'list_expeditions' %}">Retour à la liste des expéditions</a>
+<div style="max-width: 700px; margin: 40px auto; padding: 24px 28px; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border: 1px solid #dbe4ff; border-radius: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.12); font-family: Arial, sans-serif; color: #1f2937;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #dfe7ff;">
+        <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: #4b5563; font-weight: 700;">Référence</span>
+        <strong style="font-size: 1.05rem; color: #1d4ed8;">{{ expedition.reference }}</strong>
+    </div>
+
+    <div style="padding: 16px 0;">
+        <p style="margin: 0 0 12px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-weight: 700;">Description</p>
+        <p style="margin: 0; font-size: 1rem; line-height: 1.7; color: #374151;">{{ expedition.description }}</p>
+    </div>
+
+    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: #e0f2fe; color: #0f172a; font-weight: 600;">
+        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #0ea5e9;"></span>
+        {{ expedition.statut }}
+    </div>
+
+    <div style="margin-top: 24px;">
+        <a href="{% url 'listview_expeditions' %}" style="display: inline-block; text-decoration: none; background: #2563eb; color: #ffffff; padding: 12px 22px; border-radius: 10px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 6px 14px rgba(37, 99, 235, 0.2);">
+            Retour à la liste des expéditions
+        </a>
+    </div>
+</div>
