@@ -7,7 +7,7 @@ from ExpeditionApp.forms import ExpeditionForm
 from ExpeditionApp.models import Expedition
 # Create your views here.
 def home(request):
-    return HttpResponse("'<strong>Bienvenue sur l'application d'expédition !</strong>'")
+    return render(request, 'expedition/home.html')
 
 
 

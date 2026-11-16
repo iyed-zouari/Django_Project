@@ -2,7 +2,7 @@ from django.urls import path
 from .views import Liste_exprditions, home,welcome,detailleExpedition,deleteExpedition,listExpeditions,Detaille_expedition,Delete_expedition,Create_expedition,Update_expedition
 
 urlpatterns = [
-    path("home/", home, name="home"),
+    path("", home, name="home"),
     path("welcome/<str:name>/", welcome, name="welcome"),
     path("list/", listExpeditions, name="list_expeditions"),
     path("detail/<str:reference>/", detailleExpedition, name="detail_expedition"),
