@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer mon compte{% endblock %}
+{% block content %}
+<section class="panel narrow">
+    <h1>Supprimer mon compte</h1>
+    <p><strong>Cette action est irréversible.</strong> Vous serez déconnecté et vous ne pourrez plus utiliser ce compte.</p>
+    {% if company %}
+        <p>L’entreprise <strong>{{ company.raison_sociale }}</strong> et les données qui lui sont liées (expéditions, véhicules et offres) seront également supprimées.</p>
+    {% endif %}
+    {% if has_active_shipments %}
+        <p>La suppression est bloquée tant qu’une expédition liée à votre entreprise est attribuée ou en cours.</p>
+    {% endif %}
+    {% url 'profile' as cancel_url %}
+    {% if not has_active_shipments %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="fields">{{ form.as_div }}</div>
+            <div class="actions">
+                <button class="button danger" type="submit">Confirmer la suppression</button>
+                <a class="button secondary" href="{{ cancel_url }}">Annuler</a>
+            </div>
+        </form>
+    {% else %}
+        {{ form.non_field_errors }}
+        <a class="button secondary" href="{{ cancel_url }}">Retour au profil</a>
+    {% endif %}
+</section>
+{% endblock %}

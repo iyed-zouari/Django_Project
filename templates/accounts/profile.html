@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Mon profil{% endblock %}
+{% block content %}
+<section class="panel narrow">
+    <h1>Mon profil</h1>
+    <p>Rôle : <strong>{{ user.get_role_display }}</strong></p>
+    {% include 'includes/form.html' with submit_label='Enregistrer les modifications' %}
+    <hr>
+    <h2>Supprimer mon compte</h2>
+    <p>La suppression de votre compte est définitive.</p>
+    <a class="button danger" href="{% url 'delete_account' %}">Supprimer mon compte</a>
+</section>
+{% endblock %}

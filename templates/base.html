@@ -19,6 +19,7 @@
                     {% if user.role == 'transporteur' %}<a href="{% url 'vehicule_list' %}">Véhicules</a>{% endif %}
                     <a href="{% url 'entreprise_list' %}">Mon entreprise</a>
                 {% endif %}
+                <a href="{% url 'profile' %}">Mon profil</a>
                 {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration</a>{% endif %}
                 <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button outline" type="submit">Déconnexion</button></form>
             {% else %}

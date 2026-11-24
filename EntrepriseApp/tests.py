@@ -191,3 +191,99 @@ class LogisticsTests(TestCase):
         self.assertEqual(self.client.delete(delete_url).status_code, 405)
         self.assertRedirects(self.client.post(delete_url), reverse('vehicule_list'))
         self.assertFalse(Vehicule.objects.filter(pk=vehicle.pk).exists())
+
+
+class ProfileTests(TestCase):
+    password = 'Mot-De-Passe-42!'
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Utilisateur.objects.create_user(
+            username='profil', email='profil@gmail.com', password=cls.password, role='transporteur',
+        )
+        cls.other_user = Utilisateur.objects.create_user(username='autre', email='autre@gmail.com')
+
+    def setUp(self):
+        self.profile_url = reverse('profile')
+        self.delete_url = reverse('delete_account')
+
+    def test_profile_and_delete_require_login(self):
+        for url in (self.profile_url, self.delete_url):
+            for method in (self.client.get, self.client.post):
+                self.assertRedirects(method(url), f'{reverse("login")}?next={url}')
+
+    def test_update_only_updates_own_profile_and_allowed_fields(self):
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(self.profile_url), 'Mon profil')
+        response = self.client.post(self.profile_url, {
+            'username': 'nouveauprofil', 'first_name': 'Nour', 'last_name': 'Amari',
+            'email': 'nouveauprofil@gmail.com', 'telephone': '55123456',
+            'user_id': self.other_user.pk, 'role': 'admin', 'is_staff': 'on', 'is_superuser': 'on',
+        })
+        self.assertRedirects(response, self.profile_url)
+        self.user.refresh_from_db()
+        self.other_user.refresh_from_db()
+        self.assertEqual(self.user.username, 'nouveauprofil')
+        self.assertEqual(self.user.first_name, 'Nour')
+        self.assertEqual(self.user.last_name, 'Amari')
+        self.assertEqual(self.user.email, 'nouveauprofil@gmail.com')
+        self.assertEqual(self.user.telephone, '55123456')
+        self.assertEqual(self.user.role, 'transporteur')
+        self.assertFalse(self.user.is_staff)
+        self.assertFalse(self.user.is_superuser)
+        self.assertEqual(self.other_user.username, 'autre')
+        self.assertEqual(self.client.session['_auth_user_id'], self.user.pk)
+
+    def test_profile_rejects_duplicate_email(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self.profile_url, {'username': self.user.username, 'email': self.other_user.email})
+        self.assertIn('email', response.context['form'].errors)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, 'profil@gmail.com')
+
+    def test_delete_requires_password_and_signs_out(self):
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(self.delete_url), 'Confirmer la suppression')
+        self.assertTrue(Utilisateur.objects.filter(pk=self.user.pk).exists())
+        self.assertEqual(self.client.delete(self.delete_url).status_code, 405)
+        response = self.client.post(self.delete_url, {'password': 'incorrect'})
+        self.assertContains(response, 'Le mot de passe est incorrect.')
+        self.assertTrue(Utilisateur.objects.filter(pk=self.user.pk).exists())
+        response = self.client.post(self.delete_url, {'password': self.password}, follow=True)
+        self.assertRedirects(response, reverse('home'))
+        self.assertContains(response, 'Votre compte a été supprimé.')
+        self.assertFalse(Utilisateur.objects.filter(pk=self.user.pk).exists())
+        self.assertTrue(Utilisateur.objects.filter(pk=self.other_user.pk).exists())
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_delete_requires_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+        self.assertEqual(client.post(self.delete_url, {'password': self.password}).status_code, 403)
+        self.assertTrue(Utilisateur.objects.filter(pk=self.user.pk).exists())
+
+    def test_active_shipment_blocks_carrier_deletion_until_completed(self):
+        carrier = Entreprise.objects.create(
+            gerant=self.user, type_entreprise='transporteur', raison_sociale='Société de transport',
+            adresse='123 avenue des ateliers de Tunis', matricule_fiscal='0000001/A/A/M/001',
+        )
+        sender = Entreprise.objects.create(
+            gerant=self.other_user, type_entreprise='chargeur', raison_sociale='Société de distribution',
+            adresse='456 avenue des ateliers de Tunis', matricule_fiscal='0000002/A/A/M/001',
+        )
+        vehicle = LogisticsTests.make_vehicle('333 TUN 555', carrier)
+        shipment = Expedition.objects.create(entreprise=sender, ville_depart='Sfax', ville_arrivee='Tunis')
+        offer = Offre.objects.create(
+            expedition=shipment, transporteur=carrier, vehicule=vehicle, prix=100, delai_jours=1, statut='acceptee',
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(self.delete_url, {'password': self.password})
+        self.assertContains(response, 'La suppression est bloquée')
+        self.assertTrue(Utilisateur.objects.filter(pk=self.user.pk).exists())
+        self.assertTrue(Offre.objects.filter(pk=offer.pk).exists())
+        Expedition.objects.filter(pk=shipment.pk).update(statut='livree')
+        self.assertRedirects(self.client.post(self.delete_url, {'password': self.password}), reverse('home'))
+        self.assertFalse(Entreprise.objects.filter(pk=carrier.pk).exists())
+        self.assertFalse(Vehicule.objects.filter(pk=vehicle.pk).exists())
+        self.assertFalse(Offre.objects.filter(pk=offer.pk).exists())
+        self.assertTrue(Expedition.objects.filter(pk=shipment.pk, statut='livree').exists())
