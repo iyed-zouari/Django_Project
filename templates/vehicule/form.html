@@ -1,4 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Véhicule</title>
-<style>body{font-family:Arial,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1f2937}form{display:grid;gap:16px}label{display:block;font-weight:bold;margin-bottom:6px}input,select{box-sizing:border-box;width:100%;padding:10px;border:1px solid #94a3b8;border-radius:6px}input[type=checkbox]{width:auto}button,a{display:inline-block;padding:10px 14px;border:0;border-radius:6px;background:#2563eb;color:white;text-decoration:none;cursor:pointer}.cancel{background:#475569}.errorlist{color:#b91c1c;margin:5px 0;padding-left:20px}</style></head>
-<body><h1>{% if object %}Modifier{% else %}Ajouter{% endif %} un véhicule</h1><form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<div><button type="submit">Enregistrer</button> <a class="cancel" href="{% url 'vehicule_list' %}">Annuler</a></div></form></body></html>
+{% extends 'base.html' %}
+{% block title %}Véhicule{% endblock %}
+{% block content %}
+<section class="panel narrow">
+    <h1>{% if object %}Modifier le véhicule{% else %}Ajouter un véhicule{% endif %}</h1>
+    {% url 'vehicule_list' as cancel_url %}
+    {% include 'includes/form.html' %}
+</section>
+{% endblock %}

@@ -1,1 +1,11 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Entreprises</title><style>body{font-family:Arial;max-width:1000px;margin:40px auto;padding:0 20px;color:#1f2937}header,.row,.actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.row{border:1px solid #d1d5db;border-radius:10px;padding:16px;margin:12px 0}a{background:#2563eb;color:#fff;padding:9px 12px;border-radius:6px;text-decoration:none}.muted{color:#64748b}.secondary{background:#475569}.danger{background:#dc2626}</style></head><body><header><div><h1>Entreprises</h1><a class="secondary" href="{% url 'home' %}">Accueil</a></div><a href="{% url 'entreprise_create' %}">Ajouter une entreprise</a></header>{% for entreprise in entreprises %}<article class="row"><div><strong>{{ entreprise.raison_sociale }}</strong><br><span class="muted">{{ entreprise.get_type_entreprise_display }} · {{ entreprise.matricule_fiscal }} · Gérant : {{ entreprise.gerant }}</span></div><nav class="actions"><a href="{% url 'entreprise_detail' entreprise.pk %}">Voir</a><a class="secondary" href="{% url 'entreprise_update' entreprise.pk %}">Modifier</a><a class="danger" href="{% url 'entreprise_delete' entreprise.pk %}">Supprimer</a></nav></article>{% empty %}<p class="muted">Aucune entreprise enregistrée.</p>{% endfor %}</body></html>
+{% extends 'base.html' %}
+{% block title %}Mon entreprise{% endblock %}
+{% block content %}
+<h1>Mon entreprise</h1>
+{% for entreprise in entreprises %}
+<article class="row">
+    <div><strong>{{ entreprise.raison_sociale }}</strong><br><span class="muted">{{ entreprise.get_type_entreprise_display }} · {{ entreprise.matricule_fiscal }}</span></div>
+    <a class="button secondary" href="{% url 'entreprise_detail' entreprise.pk %}">Voir</a>
+</article>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Accueil{% endblock %} · Transconnect</title>
+    <link rel="stylesheet" href="{% static 'logistique/site.css' %}">
+</head>
+<body>
+<header class="topbar">
+    <nav class="shell navigation" aria-label="Navigation principale">
+        <a class="brand" href="{% url 'home' %}">Transconnect</a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                {% if user.role == 'chargeur' or user.role == 'transporteur' %}
+                    <a href="{% url 'expedition_home' %}">Expéditions</a>
+                    <a href="{% url 'offre_list' %}">Offres</a>
+                    {% if user.role == 'transporteur' %}<a href="{% url 'vehicule_list' %}">Véhicules</a>{% endif %}
+                    <a href="{% url 'entreprise_list' %}">Mon entreprise</a>
+                {% endif %}
+                {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration</a>{% endif %}
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button outline" type="submit">Déconnexion</button></form>
+            {% else %}
+                <a href="{% url 'login' %}">Connexion</a>
+                <a class="button" href="{% url 'register' %}">Inscription</a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+<main class="shell content">
+    {% if messages %}
+        <ul class="messages" aria-label="Notifications">
+            {% for message in messages %}<li class="{{ message.tags }}" role="status">{{ message }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="shell footer">Transconnect · Gestion logistique</footer>
+</body>
+</html>

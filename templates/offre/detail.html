@@ -1,1 +1,28 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Offre #{{ offre.pk }}</title><style>body{font-family:Arial;max-width:650px;margin:40px auto;padding:0 20px}dl{display:grid;grid-template-columns:max-content 1fr;gap:12px 20px}dt{font-weight:bold}a{display:inline-block;padding:10px 14px;border-radius:6px;background:#2563eb;color:#fff;text-decoration:none}.secondary{background:#475569}</style></head><body><h1>Offre #{{ offre.pk }}</h1><dl><dt>Expédition</dt><dd>{{ offre.expedition.reference }}</dd><dt>Transporteur</dt><dd>{{ offre.transporteur }}</dd><dt>Véhicule</dt><dd>{{ offre.vehicule }}</dd><dt>Prix</dt><dd>{{ offre.prix }} TND</dd><dt>Délai</dt><dd>{{ offre.delai_jours }} jour(s)</dd><dt>Statut</dt><dd>{{ offre.get_statut_display }}</dd></dl><a href="{% url 'offre_update' offre.pk %}">Modifier</a> <a class="secondary" href="{% url 'offre_list' %}">Retour</a></body></html>
+{% extends 'base.html' %}
+{% block title %}Offre #{{ offre.pk }}{% endblock %}
+{% block content %}
+<section class="panel">
+    <h1>Offre #{{ offre.pk }}</h1>
+    <dl class="details">
+        <dt>Expédition</dt><dd><a href="{% url 'detailview_expedition' offre.expedition_id %}">{{ offre.expedition.reference }}</a></dd>
+        <dt>Transporteur</dt><dd>{{ offre.transporteur.raison_sociale }}</dd>
+        <dt>Véhicule</dt><dd>{{ offre.vehicule }}</dd>
+        <dt>Prix</dt><dd>{{ offre.prix }} TND</dd>
+        <dt>Délai</dt><dd>{{ offre.delai_jours }} jour(s)</dd>
+        <dt>Statut</dt><dd>{{ offre.get_statut_display }}</dd>
+    </dl>
+    <div class="actions">
+        {% if offre.statut == 'proposee' and offre.expedition.statut == 'publiee' %}
+            {% if user.role == 'chargeur' and offre.vehicule.disponible %}
+                <form method="post" action="{% url 'offre_accept' offre.pk %}">
+                    {% csrf_token %}<button class="button" type="submit">Accepter cette offre</button>
+                </form>
+            {% elif user.role == 'transporteur' %}
+                <a class="button" href="{% url 'offre_update' offre.pk %}">Modifier</a>
+                <a class="button danger" href="{% url 'offre_delete' offre.pk %}">Supprimer</a>
+            {% endif %}
+        {% endif %}
+        <a class="button secondary" href="{% url 'offre_list' %}">Retour</a>
+    </div>
+</section>
+{% endblock %}

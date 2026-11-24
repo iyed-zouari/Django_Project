@@ -1,1 +1,10 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Supprimer</title><style>body{font-family:Arial;max-width:650px;margin:40px auto;padding:0 20px}button,a{padding:10px 14px;border:0;border-radius:6px;color:#fff;text-decoration:none;cursor:pointer}button{background:#dc2626}.cancel{background:#475569}</style></head><body><h1>Supprimer l’entreprise</h1><p>Supprimer <strong>{{ entreprise.raison_sociale }}</strong> ?</p><form method="post">{% csrf_token %}<button>Supprimer</button> <a class="cancel" href="{% url 'entreprise_detail' entreprise.pk %}">Annuler</a></form></body></html>
+{% extends 'base.html' %}
+{% block title %}Supprimer mon entreprise{% endblock %}
+{% block content %}
+<section class="panel narrow">
+    <h1>Supprimer mon entreprise</h1>
+    <p>Voulez-vous supprimer <strong>{{ entreprise.raison_sociale }}</strong> ? Votre compte sera conservé.</p>
+    {% url 'entreprise_detail' entreprise.pk as cancel_url %}
+    {% include 'includes/delete.html' %}
+</section>
+{% endblock %}

@@ -1,142 +1,41 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accueil | Gestion logistique</title>
-    <style>
-        :root {
-            font-family: Arial, sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            padding: 48px 20px;
-        }
-
-        main {
-            width: min(760px, 100%);
-            margin: 0 auto;
-        }
-
-        h1 {
-            margin: 0 0 8px;
-            font-size: clamp(1.8rem, 5vw, 2.4rem);
-        }
-
-        .intro {
-            margin: 0 0 32px;
-            color: #64748b;
-        }
-
-        .sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        section {
-            padding: 24px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #fff;
-        }
-
-        h2 {
-            margin: 0 0 8px;
-            font-size: 1.25rem;
-        }
-
-        section p {
-            margin: 0 0 20px;
-            color: #64748b;
-            line-height: 1.5;
-        }
-
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        a {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 6px;
-            background: #2563eb;
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        a:hover {
-            background: #1d4ed8;
-        }
-
-        a:focus-visible {
-            outline: 3px solid #93c5fd;
-            outline-offset: 2px;
-        }
-
-        a.secondary {
-            background: #475569;
-        }
-
-        a.secondary:hover {
-            background: #334155;
-        }
-    </style>
-</head>
-<body>
-    <main>
-        <h1>Gestion logistique</h1>
-        <p class="intro">Accédez rapidement aux opérations principales.</p>
-
-        <div class="sections">
-            <section aria-labelledby="expeditions-title">
-                <h2 id="expeditions-title">Expéditions</h2>
-                <p>Consulter, modifier ou supprimer les expéditions, ou en créer une nouvelle.</p>
-                <div class="actions">
-                    <a href="{% url 'listview_expeditions' %}">Voir les expéditions</a>
-                    <a class="secondary" href="{% url 'createview_expedition' %}">Ajouter</a>
-                </div>
-            </section>
-
-            <section aria-labelledby="vehicules-title">
-                <h2 id="vehicules-title">Véhicules</h2>
-                <p>Consulter, modifier ou supprimer les véhicules, ou en ajouter un nouveau.</p>
-                <div class="actions">
-                    <a href="{% url 'vehicule_list' %}">Voir les véhicules</a>
-                    <a class="secondary" href="{% url 'vehicule_create' %}">Ajouter</a>
-                </div>
-            </section>
-
-            <section aria-labelledby="entreprises-title">
-                <h2 id="entreprises-title">Entreprises</h2>
-                <p>Gérer les entreprises et leurs gérants.</p>
-                <div class="actions">
-                    <a href="{% url 'entreprise_list' %}">Voir les entreprises</a>
-                    <a class="secondary" href="{% url 'entreprise_create' %}">Ajouter</a>
-                </div>
-            </section>
-
-            <section aria-labelledby="offres-title">
-                <h2 id="offres-title">Offres</h2>
-                <p>Consulter les propositions de transport et en créer une nouvelle.</p>
-                <div class="actions">
-                    <a href="{% url 'offre_list' %}">Voir les offres</a>
-                    <a class="secondary" href="{% url 'offre_create' %}">Ajouter</a>
-                </div>
-            </section>
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Plateforme de transport</p>
+    {% if user.is_authenticated %}
+        <h1>Bienvenue, {{ user.username }}.</h1>
+        {% if user.role == 'chargeur' or user.role == 'transporteur' %}
+            {% if not user.entreprise %}
+                <p>Votre compte est prêt. Renseignez votre entreprise pour accéder à votre espace {{ user.get_role_display|lower }}.</p>
+                <a class="button" href="{% url 'entreprise_create' %}">Créer mon entreprise</a>
+            {% elif user.entreprise.type_entreprise != user.role %}
+                <p>Le type de votre entreprise ne correspond pas à votre rôle. Contactez un administrateur.</p>
+            {% elif user.role == 'chargeur' %}
+                <p>Publiez vos expéditions, comparez les offres reçues et choisissez un transporteur.</p>
+                <a class="button" href="{% url 'createview_expedition' %}">Publier une expédition</a>
+            {% else %}
+                <p>Consultez les expéditions publiées et proposez vos services avec les véhicules de votre entreprise.</p>
+                <a class="button" href="{% url 'listview_expeditions' %}">Voir les expéditions</a>
+            {% endif %}
+        {% elif user.is_staff %}
+            <p>Gérez les comptes et les données depuis l’administration.</p>
+            <a class="button" href="{% url 'admin:index' %}">Ouvrir l’administration</a>
+        {% endif %}
+    {% else %}
+        <h1>Vos expéditions et offres de transport au même endroit.</h1>
+        <p>Les chargeurs publient leurs besoins. Les transporteurs proposent un véhicule, un prix et un délai.</p>
+        <div class="actions">
+            <a class="button" href="{% url 'register' %}">Créer un compte</a>
+            <a class="button secondary" href="{% url 'login' %}">Se connecter</a>
         </div>
-    </main>
-</body>
-</html>
+    {% endif %}
+</section>
+{% if user.is_authenticated and user.entreprise and user.entreprise.type_entreprise == user.role %}
+<section class="cards" aria-label="Votre espace">
+    <article class="panel"><h2>Expéditions</h2><a href="{% url 'listview_expeditions' %}">{% if user.role == 'chargeur' %}Mes expéditions{% else %}Consulter les expéditions{% endif %}</a></article>
+    <article class="panel"><h2>Offres</h2><a href="{% url 'offre_list' %}">{% if user.role == 'chargeur' %}Offres reçues{% else %}Mes offres{% endif %}</a></article>
+    {% if user.role == 'transporteur' %}<article class="panel"><h2>Véhicules</h2><a href="{% url 'vehicule_list' %}">Gérer mon parc</a></article>{% endif %}
+    <article class="panel"><h2>Mon entreprise</h2><a href="{% url 'entreprise_list' %}">Consulter mon entreprise</a></article>
+</section>
+{% endif %}
+{% endblock %}

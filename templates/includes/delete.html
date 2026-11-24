@@ -1,0 +1,7 @@
+<form method="post">
+    {% csrf_token %}
+    <div class="actions">
+        <button class="button danger" type="submit">Supprimer</button>
+        <a class="button secondary" href="{{ cancel_url }}">Annuler</a>
+    </div>
+</form>

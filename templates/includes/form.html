@@ -1,0 +1,8 @@
+<form method="post">
+    {% csrf_token %}
+    <div class="fields">{{ form.as_div }}</div>
+    <div class="actions">
+        <button class="button" type="submit">{{ submit_label|default:'Enregistrer' }}</button>
+        {% if cancel_url %}<a class="button secondary" href="{{ cancel_url }}">Annuler</a>{% endif %}
+    </div>
+</form>

@@ -1,69 +1,69 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.db.models import Exists, OuterRef, Q
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from ExpeditionApp.forms import ExpeditionForm
-from ExpeditionApp.models import Expedition
-# Create your views here.
-def home(request):
-    return render(request, 'expedition/home.html')
+from config.access import BusinessRoleMixin
+from OffreApp.models import Offre
+from .forms import ExpeditionForm
+from .models import Expedition
 
 
+class ExpeditionReadMixin(BusinessRoleMixin):
+    slug_field = 'reference'
+    slug_url_kwarg = 'reference'
 
-def welcome(request,name):
-    return HttpResponse(f"'<strong>Bienvenue sur l'application d'expédition {name} !</strong>'")
-
-
-def listExpeditions(request):
-    list=Expedition.objects.filter(statut='publiee').order_by('date_souhaitee')
-    
-    return render(request, 'expedition/list.html', {'liste': list})
-
-
-
-def detailleExpedition(request, reference):
-    try:
-        expedition = Expedition.objects.get(reference=reference)
-    except Expedition.DoesNotExist:
-        return HttpResponse("Expédition non trouvée.", status=404)
-    
-    return render(request, 'expedition/detail.html', {'expedition': expedition})
+    def get_queryset(self):
+        offers = Offre.objects.filter(expedition_id=OuterRef('pk'))
+        expeditions = Expedition.objects.select_related('entreprise').annotate(has_offers=Exists(offers))
+        if self.company.type_entreprise == 'chargeur':
+            return expeditions.filter(entreprise=self.company)
+        sent_offers = offers.filter(transporteur=self.company)
+        return expeditions.filter(Q(statut='publiee') | Exists(sent_offers))
 
 
-def deleteExpedition(request, reference):
-    try:
-        expedition = Expedition.objects.get(reference=reference)
-        expedition.delete()
-        return HttpResponse(f"Expédition {reference} supprimée avec succès.")
-    except Expedition.DoesNotExist:
-        return HttpResponse("Expédition non trouvée.", status=404)
-    
-class Liste_exprditions (ListView):
-    model = Expedition
+class ExpeditionListView(ExpeditionReadMixin, ListView):
     template_name = 'expedition/list.html'
     context_object_name = 'liste'
 
-class Detaille_expedition(DetailView):
-    model = Expedition
+    def get_queryset(self):
+        return super().get_queryset().order_by('date_souhaitee', 'pk')
+
+
+class ExpeditionDetailView(ExpeditionReadMixin, DetailView):
     template_name = 'expedition/detail.html'
     context_object_name = 'expedition'
-    
-class Delete_expedition(DeleteView):
+
+
+class ChargeurMixin(BusinessRoleMixin):
+    roles = ('chargeur',)
+
+
+class EditableExpeditionMixin(ChargeurMixin):
+    slug_field = 'reference'
+    slug_url_kwarg = 'reference'
+
+    def get_queryset(self):
+        offers = Offre.objects.filter(expedition_id=OuterRef('pk'))
+        return Expedition.objects.filter(entreprise=self.company, statut='publiee').filter(~Exists(offers))
+
+
+class ExpeditionCreateView(ChargeurMixin, CreateView):
     model = Expedition
+    form_class = ExpeditionForm
+    template_name = 'expedition/forms.html'
+    success_url = reverse_lazy('listview_expeditions')
+
+    def form_valid(self, form):
+        form.instance.entreprise = self.company
+        return super().form_valid(form)
+
+
+class ExpeditionUpdateView(EditableExpeditionMixin, UpdateView):
+    form_class = ExpeditionForm
+    template_name = 'expedition/forms.html'
+    success_url = reverse_lazy('listview_expeditions')
+
+
+class ExpeditionDeleteView(EditableExpeditionMixin, DeleteView):
     template_name = 'expedition/delete.html'
-    success_url = reverse_lazy('listview_expeditions') # Redirige vers la liste après la suppression
-
-class Create_expedition(CreateView):
-    model = Expedition
-    template_name = 'expedition/forms.html'
-    #fields = '__all__'
-    form_class = ExpeditionForm
-    success_url = reverse_lazy('listview_expeditions') # Redirige vers la liste après la création
-
-class Update_expedition(UpdateView):
-    model = Expedition
-    template_name = 'expedition/forms.html'
-    form_class = ExpeditionForm
-    success_url = reverse_lazy('listview_expeditions') # Redirige vers la liste après la mise à joura
-    
+    success_url = reverse_lazy('listview_expeditions')
